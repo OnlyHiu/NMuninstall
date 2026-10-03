@@ -20,9 +20,11 @@ use crate::store::ProgramStore;
 
 const TRAY_ID: &str = "nmuninstall-tray";
 
-/// A flat, saturated teal used for the tray glyph. Keeps the build free of a
-/// binary icon dependency at runtime while still looking deliberate.
-const TRAY_RGBA: [u8; 4] = [0x00, 0x67, 0xC0, 0xFF];
+/// Fallback tray glyph, used only when the app icon cannot be decoded (a
+/// corrupt or missing bundle icon). Windows renders a 1×1 stretched block,
+/// which is far better than an invisible tray entry the user cannot find in
+/// order to reach the 退出 item.
+const TRAY_FALLBACK_RGBA: [u8; 4] = [0x00, 0x67, 0xC0, 0xFF];
 
 pub fn run() {
     let debug = cfg!(debug_assertions);
@@ -46,13 +48,14 @@ pub fn run() {
                 tracing::warn!(error = %e, "using default settings");
             }
 
-            setup_tray(&handle)?;
+            setup_tray(app)?;
             setup_window_events(&handle);
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
             commands::programs::list_programs,
             commands::programs::get_program,
+            commands::programs::get_program_icon,
             commands::uninstall::uninstall_program,
             commands::residue::check_residue,
             commands::residue::clean_residue,
@@ -71,7 +74,7 @@ pub fn run() {
         });
 }
 
-fn setup_tray(app: &tauri::AppHandle) -> tauri::Result<()> {
+fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
     let rescan = MenuItem::with_id(app, "rescan", "重新扫描", true, None::<&str>)?;
     let show = MenuItem::with_id(app, "show", "显示主窗口", true, None::<&str>)?;
     let logs = MenuItem::with_id(app, "logs", "打开日志目录", true, None::<&str>)?;
@@ -87,8 +90,23 @@ fn setup_tray(app: &tauri::AppHandle) -> tauri::Result<()> {
         ],
     )?;
 
+    // The tray icon is the only way back into a window that was hidden, so it
+    // has to be the real application icon. A 1×1 placeholder made the entry
+    // effectively invisible and left users stuck with no way to reach 退出.
+    let icon = app
+        .default_window_icon()
+        .cloned()
+        .unwrap_or_else(|| tauri::image::Image::new_owned(TRAY_FALLBACK_RGBA.to_vec(), 1, 1));
+    if icon.width() < 16 {
+        tracing::warn!(
+            width = icon.width(),
+            height = icon.height(),
+            "bundle icon is too small for a tray glyph"
+        );
+    }
+
     TrayIconBuilder::with_id(TRAY_ID)
-        .icon(tauri::image::Image::new_owned(TRAY_RGBA.to_vec(), 1, 1))
+        .icon(icon)
         .tooltip("NMUninstall")
         .menu(&menu)
         .show_menu_on_left_click(false)
@@ -129,12 +147,24 @@ fn show_main(app: &tauri::AppHandle) {
 }
 
 fn setup_window_events(app: &tauri::AppHandle) {
-    if let Some(win) = app.get_webview_window("main") {
-        win.on_window_event(|event| {
-            if let WindowEvent::CloseRequested { api, .. } = event {
-                // Hide instead of destroy so the app stays available from the tray.
-                api.prevent_close();
+    let Some(win) = app.get_webview_window("main") else {
+        return;
+    };
+    // The handler is `'static`, so it needs its own handle rather than a
+    // borrow of the one used to register it.
+    let handle = win.clone();
+    win.on_window_event(move |event| {
+        if let WindowEvent::CloseRequested { api, .. } = event {
+            // 关闭窗口时真正隐藏到托盘。之前只调用了 `prevent_close()` 却
+            // 没有隐藏窗口，点击 X 后界面纹丝不动，用户看到的就是
+            // 「关不掉」——其实是「毫无反应」。
+            if !commands::settings::current_settings().close_to_tray {
+                return; // 允许关闭：最后一个窗口销毁后进程退出
             }
-        });
-    }
+            api.prevent_close();
+            if let Err(e) = handle.hide() {
+                tracing::warn!(error = %e, "cannot hide the main window");
+            }
+        }
+    });
 }

@@ -230,6 +230,15 @@ pub struct AppSettings {
     pub list_density: ListDensity,
     pub default_quiet_uninstall: bool,
     pub uninstall_timeout_secs: u32,
+    /// `true` → the close button hides the window to the tray; `false` → the
+    /// close button really closes and the process exits.
+    ///
+    /// Default is `false`. 技术文档 §3.5 F-606 asked for hide-to-tray, but the
+    /// only route back out of a hidden window is the tray menu, and that is not
+    /// discoverable enough to be the *only* way to quit: users reported the
+    /// close button as "not working". The tray is still there for quick
+    /// re-launch, and this switch brings the old behaviour back.
+    pub close_to_tray: bool,
 }
 
 impl Default for AppSettings {
@@ -244,6 +253,7 @@ impl Default for AppSettings {
             list_density: ListDensity::Comfortable,
             default_quiet_uninstall: false,
             uninstall_timeout_secs: 300,
+            close_to_tray: false,
         }
     }
 }
@@ -372,6 +382,7 @@ mod tests {
             "listDensity",
             "defaultQuietUninstall",
             "uninstallTimeoutSecs",
+            "closeToTray",
         ] {
             assert!(
                 setting_keys.contains(&expected),

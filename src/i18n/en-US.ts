@@ -115,6 +115,8 @@ export const enUS: Record<TranslationKey, string> = {
   'settings.defaultQuiet': 'Prefer quiet uninstall by default',
   'settings.timeout': 'Uninstall timeout (seconds)',
   'settings.timeoutHint': 'Only applies to waitable uninstallers; 30–3600',
+  'settings.closeToTray': 'Minimise to tray on close',
+  'settings.closeToTrayHint': 'When on, the close button only hides to the tray — use the tray menu’s Quit to end the process',
   'settings.about': 'About',
   'settings.version': 'Version',
   'settings.openLogs': 'Open log folder',

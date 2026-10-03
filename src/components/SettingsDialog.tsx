@@ -122,6 +122,12 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
             checked={draft.defaultQuietUninstall}
             onChange={(v) => set('defaultQuietUninstall', v)}
           />
+          <Toggle
+            label={t('settings.closeToTray')}
+            hint={t('settings.closeToTrayHint')}
+            checked={draft.closeToTray}
+            onChange={(v) => set('closeToTray', v)}
+          />
           <label className="flex flex-col gap-1">
             <span>{t('settings.timeout')}</span>
             <div className="flex items-center gap-2">

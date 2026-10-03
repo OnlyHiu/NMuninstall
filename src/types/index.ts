@@ -107,6 +107,8 @@ export interface AppSettings {
   listDensity: ListDensity;
   defaultQuietUninstall: boolean;
   uninstallTimeoutSecs: number;
+  /** `true` → the close button hides to the tray; `false` → it exits. */
+  closeToTray: boolean;
 }
 
 export interface AppInfo {
@@ -149,4 +151,5 @@ export const DEFAULT_SETTINGS: AppSettings = {
   listDensity: 'comfortable',
   defaultQuietUninstall: false,
   uninstallTimeoutSecs: 300,
+  closeToTray: false,
 };

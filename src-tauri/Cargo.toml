@@ -29,6 +29,9 @@ tauri-plugin-clipboard-manager = "2"
 
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+# Encodes the rendered PNG into a data URL so the WebView can render it in a
+# plain `<img src>` without a temp-file lifecycle on the Rust side.
+base64 = "0.22"
 thiserror = "2"
 tokio = { version = "1", features = ["process", "time", "rt", "macros"] }
 tracing = "0.1"
@@ -37,6 +40,17 @@ tracing-appender = "0.2"
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.55"
+# Icon extraction: Win32 pulls the icon out of the PE resource section, then
+# `image` encodes the RGBA pixels as PNG. Only the PNG *encoder* is needed —
+# the pixels come from `GetDIBits`, not from a decoder — so every other codec
+# and the rayon backend are left out to keep the binary small.
+image = { version = "0.25", default-features = false, features = ["png"] }
+windows-sys = { version = "0.61", features = [
+    "Win32_Foundation",
+    "Win32_Graphics_Gdi",
+    "Win32_UI_Shell",
+    "Win32_UI_WindowsAndMessaging",
+] }
 
 [dev-dependencies]
 tempfile = "3"

@@ -113,6 +113,8 @@ export const zhCN = {
   'settings.defaultQuiet': '默认使用静默卸载',
   'settings.timeout': '卸载超时（秒）',
   'settings.timeoutHint': '仅对可等待的卸载器生效，范围 30–3600',
+  'settings.closeToTray': '关闭窗口时最小化到托盘',
+  'settings.closeToTrayHint': '开启后点右上角关闭只是隐藏到托盘，需从托盘右键「退出」才能结束进程',
   'settings.about': '关于',
   'settings.version': '版本',
   'settings.openLogs': '打开日志目录',
