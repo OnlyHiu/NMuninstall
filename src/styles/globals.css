@@ -1,0 +1,195 @@
+@import 'tailwindcss';
+
+/*
+ * Windows 11 design tokens. Values follow 技术文档 附录 B.
+ * Light is the default; `[data-theme='dark']` overrides the semantic colours.
+ */
+:root {
+  --win-accent: #0067c0;
+  --win-accent-hover: #1a7fd1;
+  --win-accent-pressed: #005494;
+
+  --win-bg: #f3f3f3;
+  --win-surface: #ffffff;
+  --win-surface-alt: #fafafa;
+  --win-text: #1b1b1b;
+  --win-text-secondary: #5d5d5d;
+  --win-border: #e5e5e5;
+  --win-border-strong: #d1d1d1;
+
+  --win-row-hover: #f3f3f3;
+  --win-row-selected: #e5f0fa;
+  --win-row-selected-inactive: #f0f0f0;
+
+  --win-danger: #c42b1c;
+  --win-danger-hover: #d13438;
+  --win-warning-bg: #fff4ce;
+  --win-warning-border: #f7d154;
+  --win-warning-text: #4a3a00;
+
+  --win-radius-card: 8px;
+  --win-radius-ctl: 4px;
+  --win-shadow-flyout: 0 2px 4px rgb(0 0 0 / 0.08), 0 0 16px rgb(0 0 0 / 0.06);
+
+  --row-h: 48px;
+  --toolbar-h: 52px;
+  --statusbar-h: 28px;
+  --detail-w: 340px;
+}
+
+[data-theme='dark'] {
+  --win-accent: #4cc2ff;
+  --win-accent-hover: #47b1e8;
+  --win-accent-pressed: #2e96c9;
+
+  --win-bg: #202020;
+  --win-surface: #2b2b2b;
+  --win-surface-alt: #272727;
+  --win-text: #ffffff;
+  --win-text-secondary: #c5c5c5;
+  --win-border: #3d3d3d;
+  --win-border-strong: #4a4a4a;
+
+  --win-row-hover: #2d2d2d;
+  --win-row-selected: #103f6e;
+  --win-row-selected-inactive: #2a2a2a;
+
+  --win-danger: #ff99a4;
+  --win-danger-hover: #f1707a;
+  --win-warning-bg: #3a2f00;
+  --win-warning-border: #7a6413;
+  --win-warning-text: #ffe08a;
+
+  --win-shadow-flyout: 0 2px 4px rgb(0 0 0 / 0.4), 0 0 16px rgb(0 0 0 / 0.3);
+}
+
+[data-density='compact'] {
+  --row-h: 32px;
+}
+
+* {
+  border-color: var(--win-border);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--win-bg);
+  color: var(--win-text);
+  font-family: 'Segoe UI Variable Text', 'Segoe UI', system-ui, 'Microsoft YaHei UI',
+    'PingFang SC', sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Numeric columns must not jitter while resizing or re-sorting. */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+.mono {
+  font-family: Consolas, 'Cascadia Mono', 'Courier New', monospace;
+  font-size: 12px;
+}
+
+/* Fluent focus ring, only for keyboard users. */
+:focus-visible {
+  outline: 2px solid var(--win-accent);
+  outline-offset: -2px;
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Keep a scrollable region from painting over the sticky header. */
+.scroll-area {
+  contain: strict;
+  overflow: auto;
+  scrollbar-gutter: stable;
+}
+
+.scroll-area::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+.scroll-area::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--win-text) 28%, transparent);
+  border-radius: 6px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+.scroll-area::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--win-text) 45%, transparent);
+  background-clip: content-box;
+}
+.scroll-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* The virtualizer measures rows; a hard height keeps it from re-measuring. */
+.virt-row {
+  height: var(--row-h);
+  contain: strict;
+  will-change: transform;
+}
+
+/*
+ * Row states live in CSS rather than inline styles so that `:hover` still works
+ * on a selected row without a React re-render per mouse move.
+ */
+.row {
+  background: transparent;
+}
+.row:hover {
+  background: var(--win-row-hover);
+}
+.row[aria-selected='true'] {
+  background: var(--win-row-selected);
+}
+.row[aria-selected='true']:hover {
+  background: color-mix(in srgb, var(--win-accent) 24%, var(--win-row-selected));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Animations used by the flyouts. */
+@keyframes flyout-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.flyout {
+  animation: flyout-in 120ms ease-out;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  animation: spin 900ms linear infinite;
+}

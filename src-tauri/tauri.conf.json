@@ -1,0 +1,88 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "NMUninstall",
+  "version": "1.0.0",
+  "identifier": "com.onlyhiu.nmuninstall",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "NMUninstall",
+        "width": 1180,
+        "height": 720,
+        "minWidth": 880,
+        "minHeight": 520,
+        "center": true,
+        "resizable": true,
+        "fullscreen": false,
+        "theme": null,
+        "visible": true,
+        "decorations": true,
+        "dragDropEnabled": false
+      }
+    ],
+    "security": {
+      "csp": {
+        "default-src": "'self'",
+        "img-src": "'self' asset: http://asset.localhost data: blob:",
+        "style-src": "'self' 'unsafe-inline'",
+        "script-src": "'self'",
+        "connect-src": "'self' ipc: http://ipc.localhost",
+        "font-src": "'self' data:",
+        "object-src": "'none'",
+        "base-uri": "'self'",
+        "form-action": "'none'"
+      },
+      "assetProtocol": {
+        "enable": true,
+        "scope": {
+          "allow": [
+            "$LOCALDATA/**",
+            "$APPDATA/**",
+            "C:\\Program Files\\**",
+            "C:\\Program Files (x86)\\**",
+            "C:\\ProgramData\\**"
+          ],
+          "deny": [
+            "$APPDATA/Microsoft/Windows/**",
+            "$LOCALDATA/Microsoft/Windows/**",
+            "$LOCALDATA/Temp/**"
+          ]
+        }
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis", "msi"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.ico"
+    ],
+    "category": "Utility",
+    "shortDescription": "Windows 程序管理与卸载工具",
+    "longDescription": "以 Windows 原生风格浏览已安装程序、查看详情并调用卸载器完成卸载，支持静默卸载与卸载后残留检测。",
+    "copyright": "Copyright © 2026 OnlyHiu",
+    "publisher": "OnlyHiu",
+    "homepage": "https://github.com/OnlyHiu/NMuninstall",
+    "windows": {
+      "webviewInstallMode": {
+        "type": "downloadBootstrapper"
+      },
+      "allowDowngrades": false,
+      "nsis": {
+        "installMode": "perMachine",
+        "languages": ["SimpChinese", "English"],
+        "displayLanguageSelector": true
+      }
+    }
+  }
+}

@@ -1,0 +1,12 @@
+# Normalise line endings: keep them LF in the repository, convert on checkout.
+* text=auto eol=lf
+
+# Windows-native files that must stay CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Binary assets
+*.png binary
+*.ico binary
+*.icns binary

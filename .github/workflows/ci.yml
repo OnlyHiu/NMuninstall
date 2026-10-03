@@ -1,0 +1,103 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  frontend:
+    name: Frontend (typecheck, lint, unit tests)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate tauri.conf.json against the CLI schema
+        run: npm run check:config
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm run test
+
+  backend:
+    name: Backend (fmt, clippy, unit tests)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Formatting
+        run: cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
+
+      - name: Clippy
+        run: cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings
+
+      - name: Unit tests (lib)
+        run: cargo test --manifest-path src-tauri/Cargo.toml --lib
+
+      - name: Parser integration tests
+        run: cargo test --manifest-path src-tauri/Cargo.toml --test parser_integration
+
+      # The registry scan test reads the live machine, so it runs on Windows
+      # only and is allowed to be environment-sensitive.
+      - name: Registry integration tests
+        run: cargo test --manifest-path src-tauri/Cargo.toml --test registry_integration
+
+  bundle:
+    name: Bundle (NSIS + MSI)
+    needs: [frontend, backend]
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+          key: bundle
+
+      - run: npm ci
+
+      - name: Build installers
+        run: npm run tauri build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nmuninstall-installers
+          if-no-files-found: error
+          path: |
+            src-tauri/target/release/bundle/nsis/*.exe
+            src-tauri/target/release/bundle/msi/*.msi
+          retention-days: 14
